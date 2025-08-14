@@ -1,0 +1,154 @@
+2025-08-10 02:34:56.749 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 02:47:09.086 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 02:57:11.050 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 03:03:32.793 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 03:04:44.233 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 03:08:13.101 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 03:14:57.864 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 11:43:53.262 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 12:43:53.287 | INFO     | __main__:run_schedule:42 - Running schedule: Daily
+2025-08-10 12:43:53.306 | INFO     | __main__:enqueue_pipeline:19 - Enqueued pipeline status=200
+2025-08-10 12:51:51.889 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 13:03:28.926 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 13:04:29.562 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 13:11:06.211 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 13:11:36.235 | INFO     | __main__:_resync:77 - Scheduler synced with config
+2025-08-10 13:28:11.384 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 13:28:41.406 | INFO     | __main__:_resync:77 - Scheduler synced with config
+2025-08-10 13:31:12.257 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-10 13:31:42.278 | INFO     | __main__:_resync:77 - Scheduler synced with config
+2025-08-10 13:51:28.245 | INFO     | __main__:run_scheduler_loop:62 - Scheduler loop started (no blocking sleeps).
+2025-08-12 21:36:15.018 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-12 21:36:45.041 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-12 23:23:26.918 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-12 23:24:59.734 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-12 23:25:31.727 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-12 23:26:01.748 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-12 23:40:43.476 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-12 23:41:13.497 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-12 23:43:51.774 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-12 23:59:35.893 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 00:01:41.111 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 00:02:11.312 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-13 01:02:11.317 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 01:02:11.331 | INFO     | __main__:enqueue_pipeline:21 - Enqueued pipeline status=200
+2025-08-13 02:02:11.318 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 02:02:11.320 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017445929C50>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 03:02:11.315 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 03:02:11.317 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744592EA50>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 04:02:11.330 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 04:02:11.332 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744592D890>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 05:02:11.320 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 05:02:11.322 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744591E290>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 06:02:11.312 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 06:02:11.314 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744594B290>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 07:02:11.323 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 07:02:11.325 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744595A010>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 08:02:11.325 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 08:02:11.328 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017445916850>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 09:02:11.320 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 09:02:11.322 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017445948110>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 10:02:11.328 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 10:02:11.330 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744595AE90>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 11:02:11.327 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 11:02:11.329 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744595C890>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 12:02:11.323 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 12:02:11.325 | ERROR    | __main__:enqueue_pipeline:23 - enqueue error: HTTPConnectionPool(host='127.0.0.1', port=8001): Max retries exceeded with url: /enqueue/pipeline (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001744594B790>: Failed to establish a new connection: [WinError 10055] An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full'))
+2025-08-13 12:09:31.373 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 12:10:01.393 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-13 16:36:03.725 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 16:45:48.723 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 16:49:53.639 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 16:56:30.059 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 16:57:00.084 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-13 17:03:43.446 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 17:04:13.462 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-13 17:08:47.163 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 17:09:51.146 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 17:10:21.171 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-13 17:28:19.015 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 17:28:49.039 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-13 18:28:49.056 | INFO     | __main__:run_schedule:44 - Running schedule: Daily
+2025-08-13 18:28:49.069 | INFO     | __main__:enqueue_pipeline:21 - Enqueued pipeline status=200
+2025-08-13 18:35:23.170 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-13 18:35:53.183 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 02:02:34.199 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:09:28.221 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:11:16.582 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:14:05.171 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:15:38.366 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:17:09.448 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:18:06.842 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:19:24.985 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 02:20:53.897 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 10:16:55.116 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 10:20:54.527 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 10:21:24.544 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 10:39:49.669 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 10:40:19.693 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 10:47:11.776 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 10:47:41.791 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 10:57:07.122 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:02:12.312 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:02:42.329 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:08:25.952 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:08:55.966 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:17:13.948 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:17:43.963 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:21:31.276 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:22:01.291 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:24:03.483 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:24:33.496 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:25:08.213 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:25:38.233 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:26:25.907 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:26:55.929 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:30:39.556 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:31:09.580 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:35:33.682 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 11:36:03.698 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 11:38:33.275 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 12:28:16.511 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 12:28:46.537 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 12:31:38.980 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 12:32:09.002 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 12:47:29.845 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 12:47:59.868 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 12:52:03.079 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 12:52:33.093 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 12:55:23.032 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 12:55:53.060 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 13:01:11.687 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 13:03:52.394 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 13:04:22.418 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 13:09:26.710 | INFO     | __main__:run_scheduler_loop:64 - Scheduler loop started (no blocking sleeps).
+2025-08-14 13:09:56.727 | INFO     | __main__:_resync:79 - Scheduler synced with config
+2025-08-14 13:43:49.059 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 13:44:19.079 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 13:48:36.531 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 13:49:06.558 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 14:12:05.220 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 14:12:35.241 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 16:44:12.211 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 16:44:42.237 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 16:45:00.036 | INFO     | __main__:run_schedule:44 - Running schedule: repeat_test
+2025-08-14 16:45:00.050 | INFO     | __main__:enqueue_pipeline:21 - Enqueued pipeline status=200
+2025-08-14 21:04:25.459 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:04:55.479 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 21:21:50.216 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:22:20.240 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 21:40:37.372 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:45:36.495 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:46:06.509 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 21:47:08.731 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:55:21.647 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:55:51.662 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 21:58:50.663 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 21:59:20.677 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 22:07:25.041 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 22:07:55.063 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 23:25:41.163 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 23:27:37.928 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 23:28:07.955 | INFO     | __main__:_resync:80 - Scheduler synced with config
+2025-08-14 23:45:38.807 | INFO     | __main__:run_scheduler_loop:65 - Scheduler loop started (no blocking sleeps).
+2025-08-14 23:46:08.837 | INFO     | __main__:_resync:80 - Scheduler synced with config

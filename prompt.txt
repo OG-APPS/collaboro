@@ -1,0 +1,306 @@
+# 🔧 Master Implementation Prompt — “TikTok Automation (Client-Ready, Rooted, Polished UX)”
+
+You are a senior engineer enhancing an **existing** Python project (FastAPI + PyQt6 + uiautomator2 + adbutils + ffmpeg). The app automates TikTok on **real Android devices**. The device is **rooted**. Do not rewrite from scratch; **extend and polish** the current repo. Maintain backwards compatibility where possible.
+
+## 0) Goals (what the finished app must deliver)
+
+* **One-click run** for Warmup/Post/Full Pipeline from a **polished GUI** (dark theme, compact, readable).
+* **Stable orchestration**: API + Scheduler + cancel-aware Worker(s) + GUI; auto-port, health checks.
+* **Rooted isolation cycle**: create/switch Android user, spoof props (optional), best-effort Wi-Fi MAC change, GAID reset, install chosen APK, login, detect FYP, warmup (human-like), post video, break.
+* **Safety & observability**: persistent action counters, job timeline, unified logs, simple metrics.
+* **Operator clarity**: device status, scrcpy controls, video preview (contained), cancel/pause/resume.
+
+Deliverables include **code, config, QSS theme, tests, updated README and docs**.
+
+---
+
+## 1) Non-goals / ground rules
+
+* Don’t claim or implement IMEI/serial spoofing; out of scope.
+* Avoid long blocking sleeps in scheduler jobs.
+* Keep **feature flags** for risky/root-only features (props spoof, MAC spoof).
+* Keep current directories; refactor only where necessary and clearly.
+
+---
+
+## 2) Architecture (must match)
+
+```
+main.py                # launcher: auto-port, start API/Scheduler/Worker/GUI
+orchestrator/
+  api.py               # FastAPI: jobs, runs, logs, devices, config, metrics
+  scheduler.py         # APScheduler: builds pipelines from schedules (no blocking sleeps)
+worker/
+  device_worker.py     # per-device loop: claim job, run pipeline, cancel-aware
+core/
+  device_runner.py     # pipeline executor: unlock, launch, warmup, post, rooted steps
+  state_machine.py     # WarmupScroller (human-like)
+  actions.py           # taps, scrolls, inputs, selectors
+  recovery.py          # L1/L2/L3 recovery
+  permissions.py       # permission dialogs
+  selectors.py         # selector packs (primary/fallback) per app version/locale
+  root_identity.py     # rooted utilities (user create/switch, resetprop, MAC, GAID)
+interfaces/
+  ui2.py               # uiautomator2 connector
+  adb.py               # adb helpers
+ui/
+  app.py               # PyQt6 app (tabs, async HTTP)
+  scrcpy.py            # launch scrcpy (version-aware flags), recording
+  assets/theme.qss     # modern dark theme (good contrast, compact spacing)
+video/
+  effects.py           # ffmpeg wrappers (repurpose 9:16, normalize, watermark)
+utils/
+  config.py            # deep-merge YAML + defaults, Pydantic validation
+  logger_setup.py      # loguru with rotation, consistent context
+artifacts/
+  orchestrator.db
+  logs/
+  processed/
+  recordings/
+config/
+  config.yaml          # defaults & presets
+  selectors.yaml       # selector sets keyed by app version/locale
+```
+
+Keep module names stable; fill missing pieces.
+
+---
+
+## 3) UX / UI (polish + fixes)
+
+**Navigation:** left sidebar → Overview · Quick Run · Pipelines · Schedules · Devices · Media · Jobs/Runs · Logs · Settings.
+**Top bar:** device selector | API status dot | Start/Stop | **Emergency Stop**.
+**Theme:** modern **dark**, high contrast, compact top bar. Fix fonts/paddings; add tooltips.
+
+**Must implement:**
+
+* **Quick Run wizard** (4 steps): Goal → Content → Safety → Review. Show **time estimate** and action counts; one-click launch.
+* **Video preview** embedded in page (QtMultimedia). **No overlay** that blocks the UI. Ensure the preview container is constrained; provide Close button.
+* **Pipelines**: drag to reorder; inline step forms; **Run Now**; **Auto-open scrcpy** checkbox per pipeline.
+* **Schedules**: time chips + repeat; flatten to pipelines (no blocking sleeps).
+* **Devices**: state (device/unauthorized/offline), model, Android version; Start/Stop worker; **scrcpy** Open/Close + options (view-only, always-on-top, FPS, video-bit-rate, record).
+* **Jobs/Runs**: filterable table; **timeline** with step durations; Cancel/Pause/Resume/Retry buttons.
+* **Logs** tab: source filter (api/worker/scheduler/all), live tail toggle, search, copy/export.
+* **Settings**: theme, artifacts dir, API preferred port (with auto-fallback), scrcpy defaults, FFmpeg presets, safety presets, feature flags for rooted ops.
+
+**Networking in GUI:** move all `requests.*` off the UI thread (use QThread/QtConcurrent/QNetworkAccessManager). GUI must not freeze.
+
+**Scrcpy:** Detect version; use `--video-bit-rate` for v3+; implement record option to `artifacts/recordings/{serial}-{ts}.mp4`. Provide “Auto-open during runs” (global default + per pipeline).
+
+---
+
+## 4) Pipeline DSL (JSON) and new rooted steps
+
+Support steps:
+
+* `rotate_network {mode:"vpn_app"|"wifi_profile", profile:"wg-eu-1", timeout_s:45}`
+* `create_user_rooted {name?:string, ephemeral?:bool}`
+* `switch_user_rooted {user_id:int}`
+* `spoof_props_rooted {props:{k:v}, reboot_if_changed:true}`  *(Magisk resetprop; whitelist keys like ro.product.model, ro.product.device, ro.product.brand, ro.build.fingerprint)*
+* `spoof_wifi_mac_rooted {mode:"random"|"fixed", mac?:string, iface?:string, ssid?:string}`
+* `reset_gaid {mode:"root"|"ui", timeout_s:60}`
+* `install_apk {apk_path:string, reinstall:true}`
+* `launch_tiktok {timeout_s:60}`
+* `login {method:"gmail"|"password", gmail_account?:string, username?:string, password?:string, resolver:"basic"|"alt"}`
+* `ensure_fyp {max_retries:3, timeout_s:40}`
+* `warmup {seconds:int, like_prob:float, comment_prob:float, share_prob:float, randomization_preset:"safe"|"balanced"|"pushy"}`
+* `post_video {video:path, caption:str, effects:{repurpose_9x16?:bool, normalize_audio?:bool, watermark?:path}}`
+* `break {duration_s:int}`
+
+**Example rooted cycle** (use as a default template in the app):
+
+```json
+[
+  {"type":"create_user_rooted","ephemeral":true},
+  {"type":"spoof_props_rooted","props":{"ro.product.model":"SM-G991B","ro.product.brand":"samsung"}},
+  {"type":"spoof_wifi_mac_rooted","mode":"random"},
+  {"type":"reset_gaid","mode":"root"},
+  {"type":"install_apk","apk_path":"<ASK_FROM_UI_DRAG_DROP>","reinstall":true},
+  {"type":"launch_tiktok"},
+  {"type":"login","method":"password","username":"<UI>","password":"<UI>","resolver":"basic"},
+  {"type":"ensure_fyp"},
+  {"type":"warmup","seconds":480,"like_prob":0.07,"comment_prob":0.00,"share_prob":0.00,"randomization_preset":"balanced"},
+  {"type":"post_video","video":"<UI_PICK>","caption":"🔥 daily post","effects":{"repurpose_9x16":true,"normalize_audio":true}},
+  {"type":"break","duration_s":1800}
+]
+```
+
+**Order of operations:** create/switch user → props → **reboot if changed** → MAC → network → GAID reset → install → login → FYP → warmup → post → break.
+
+---
+
+## 5) Human-like Warmup (must match spec)
+
+Implement **WarmupScroller** with:
+
+* Randomized origin/target **bands**, **x band**, **curvature**, **ease in/out**, **micro-jitter**, **reverse probability**, and **streaky likes** (non-IID).
+* Cancel checks every ≤200ms during dwell/pauses.
+* Config in `config.yaml`:
+
+  ```yaml
+  warmup:
+    origin_band: [0.30, 0.85]
+    target_band: [0.15, 0.60]
+    x_band: [0.35, 0.65]
+    curve_amount: [0.02, 0.10]
+    duration_ms: [220, 480]
+    inter_swipe_ms: [350, 1200]
+    reverse_prob: 0.08
+    micro_jitter_prob: 0.20
+    micro_jitter_px: [3, 18]
+    like_probability: 0.06
+    like_streakiness: 0.25
+    watch_time_s: [4, 10]
+    chance_pause_long: 0.05
+    pause_long_s: [8, 18]
+    rng_day_seeded: true
+  ```
+
+Acceptance: reverse \~5–10% over 100 swipes; likes cluster when streakiness > 0.
+
+---
+
+## 6) Posting flow (stabilize)
+
+* Push file to `/sdcard/Movies/TA/<uuid>.mp4`.
+* Navigate: tap “+” → if camera opens, choose **Upload**; else gallery → pick our file (match by filename or position).
+* Editor: wait for processing; **Next**.
+* Caption: fill text (emoji safe).
+* Post: tap Post; verify success (e.g., “Your video is being uploaded” or feed return).
+* All selectors live in `selectors.yaml` (primary & fallback). Provide **versioned sets** per app version/locale; allow live switching.
+
+---
+
+## 7) Safety & rate limits
+
+* **SQLite counters** per device + date: posts, likes, follows, comments.
+* Safety caps in `config.yaml`:
+
+  ```yaml
+  safety:
+    caps: {posts:5, likes:200, follows:50, comments:30}
+  ```
+* Check **remaining today** before actions; if over, fail job with `reason:"safety_cap"`.
+* Show **remaining today** pill on Overview.
+
+---
+
+## 8) API (final contracts)
+
+* `GET /health` → `{ok, pid, version, ts}`
+* `GET /devices` → `[{serial, state, model, android}]`
+* `GET /jobs?device=&status=&limit=`
+* `POST /enqueue/warmup`
+* `POST /enqueue/pipeline`
+* `POST /jobs/{id}/pause|resume|cancel|retry`
+* `GET /jobs/next?device=SERIAL` *(atomic claim for worker)*
+* `GET /runs?device=&job_id=&limit=`
+* `GET /logs?source=api|worker|scheduler|all&lines=1000` → text
+* `GET /metrics/summary?since=today` → `{jobs_total, jobs_succeeded, jobs_failed, posts_today, likes_today, avg_warmup_s, success_rate}`
+* `GET /config`, `POST /config` (validate with Pydantic; **deep-merge**).
+
+Implement missing ones; keep compatibility with existing endpoints already used by GUI.
+
+---
+
+## 9) Root utilities (robustness)
+
+In `core/root_identity.py`, implement:
+
+* `create_user()` → parse user id from `pm create-user …`
+* `switch_user()` → `am start-user` + `am switch-user`; wait until active
+* `has_resetprop()` + `set_props()` (Magisk). **Whitelist** prop keys; if changed and `reboot_if_changed=true`, reboot + wait.
+* `detect_wifi_iface()` (parse `ip -o link`)
+* `gen_random_mac()` (locally administered MAC)
+* `set_wifi_mac()` → `ip link set …` and fallback to `ifconfig`; **verify** via `ip link show`.
+* `reset_gaid_root()` best-effort (clear GMS prefs); if fails, fallback to **UI path** via automation.
+  All methods return explicit success/false and log detailed reasons.
+
+---
+
+## 10) Logs & metrics
+
+* Add consistent log context: `device=<serial> job=<id> step=<name>`.
+* Rotating log files in `artifacts/logs/`.
+* Runs DB row per step with `duration_ms`, `status`, and `metrics` JSON (e.g., swipes, likes, retries).
+* `/metrics/summary` used by Overview cards.
+
+---
+
+## 11) Config & validation
+
+* `utils/config.py`: **deep-merge** YAML over defaults; Pydantic models validate:
+
+  * probabilities in \[0,1], ranges lo\<hi, paths exist when provided.
+* On validation failure: log error + GUI toast; Settings shows offending keys.
+
+---
+
+## 12) Testing & QA (must ship)
+
+**Unit tests**
+
+* WarmupScroller distributions and cancellation behavior.
+* Config validation errors for bad inputs.
+
+**Integration**
+
+* Enqueue pipeline → worker consumes → runs DB has per-step rows.
+* Cancel during warmup stops ≤1s.
+* Post succeeds 3/3 on the target device.
+
+**Manual**
+
+* Scrcpy open/close/record; auto-open with runs.
+* Video preview never blocks UI.
+* Root ops: create/switch user; MAC spoof self-test; resetprop presence detection.
+
+---
+
+## 13) Packaging
+
+* `install.ps1`: check Python 3.11+, pip, adb, scrcpy, ffmpeg; create `.venv`; install; init DB; show next steps. No bashisms; pure PowerShell.
+* Optional PyInstaller frozen build (Windows one-folder). Discover scrcpy in PATH or `tools/scrcpy/scrcpy.exe`.
+
+---
+
+## 14) Performance targets
+
+* Quick Run → first API call: < 2s.
+* Video preview open: < 1.5s.
+* Warmup tick granularity during dwell: ≤ 200ms.
+* Scrcpy defaults: view-only, 30 fps, `--video-bit-rate 6–8M`, always-on-top.
+
+---
+
+## 15) Definition of Done (checkboxes)
+
+* [ ] GUI is compact, readable; top bar no longer oversized; dark theme has good contrast.
+* [ ] Quick Run launches Warmup/Post/Full in ≤3 clicks with estimates.
+* [ ] Pipelines support all rooted steps; drag-drop APK to `install_apk`.
+* [ ] Schedules flatten into pipelines; no scheduler blocking sleeps.
+* [ ] Worker is cancel/pause/resume aware; checks cancellation frequently.
+* [ ] WarmupScroller matches spec; streaky likes & reverse implemented.
+* [ ] Posting flow stable on target device with selector packs.
+* [ ] Safety caps enforced; Overview shows remaining today.
+* [ ] Scrcpy controls work; auto-open on run; recording saves files.
+* [ ] Logs tab unified; Jobs/Runs timeline present; export run report JSON.
+* [ ] Root ops: user create/switch, MAC spoof (with self-test), resetprop (whitelist) + reboot when changed.
+* [ ] Config deep-merge + Pydantic validation.
+* [ ] README updated (operator + developer); CHANGELOG and basic tests passing.
+
+---
+
+## 16) Notes for the engineer
+
+* **Do not delete** existing files/features; evolve them.
+* Guard all rooted features behind checks and feature flags; degrade gracefully on non-root.
+* Keep selectors editable in `selectors.yaml`; don’t hard-wire to one version.
+* Log **why** something was skipped (e.g., “resetprop not found”, “MAC change rejected by driver”).
+* Be explicit with scrcpy flags for v3+ (`--video-bit-rate`).
+
+---
+
+**Output when done:** code changes + updated docs. Provide a short migration note if DB schema changed (add `counters` table). Include a screenshot of the top bar, Quick Run, Jobs timeline, Logs tab to verify UX.
+
+If anything is unclear, assume **pragmatic defaults** and keep feature flags configurable in Settings.

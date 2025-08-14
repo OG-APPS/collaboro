@@ -1,0 +1,498 @@
+Awesome—here’s a **full, engineer-ready plan** that captures everything we’ve discussed + the ideal end state. It’s written so a senior dev can pick it up and build confidently.
+
+---
+
+# TikTok Automation – “Client-Ready” Build Plan
+
+## 0) Vision & Success Criteria
+
+**Vision:** A desktop app that runs reliable TikTok automation on real Android devices with **one click**, **human-like behavior**, **clear safety controls**, and **professional UX**. It must be demo-ready for a client: stable, predictable, and easy to operate.
+
+**Success (operator POV):**
+
+* I can run a **Warmup** or **Post** in **≤ 3 clicks**.
+* I can **see what’s happening** (device health, job timeline, live logs).
+* I can **cancel/pause/resume** safely.
+* I can **preview** repurposed videos and tweak settings without touching JSON.
+
+**Success (engineering POV):**
+
+* Clean boundaries (GUI ↔ API ↔ Worker ↔ Core).
+* Deterministic, cancel-aware job execution with **retries & recovery**.
+* Config validated at startup; **deep-merge** of YAML defaults and local overrides.
+* Observability: structured logs, runs DB, counters, and simple metrics.
+
+---
+
+## 1) Feature Matrix (Now → Final)
+
+| Area             | Must have (final)                                        | Status             | Notes                                          |
+| ---------------- | -------------------------------------------------------- | ------------------ | ---------------------------------------------- |
+| Quick Run wizard | Warmup/Post/Full Pipeline, preview, presets, estimate    | Partial → Finalize | Add time estimates; pass safety params through |
+| Pipelines        | Drag-reorder steps, inline forms, repeat, sleep ranges   | Partial → Finalize | Ensure per-step effects + validation           |
+| Schedules        | Multiple times, repeat, items (cycle/break), Run Now     | Partial → Finalize | No blocking sleeps; flatten to pipelines       |
+| Device mgmt      | List devices, state, start/stop workers, scrcpy controls | Partial → Finalize | Multi-device orchestrations                    |
+| Video processing | Repurpose 9:16, normalize, watermark, preview            | Partial → Finalize | Cache processed outputs; per-step overrides    |
+| Posting flow     | Push file → open upload → caption → post                 | Draft → Harden     | Tune selectors on your device build            |
+| Warmup           | Human-like scrolling/likes (advanced randomization)      | Add                | Implement WarmupScroller (spec below)          |
+| Safety           | Presets + **persistent daily counters**                  | Add                | caps + “remaining today” pill                  |
+| Observability    | Jobs/Runs + unified Logs + metrics cards                 | Partial → Add      | Add metrics (jobs/day, success rate)           |
+| Recovery         | L1 restart app → L2 wait+restart → L3 reboot             | Partial → Finalize | Add “reopen TikTok if foreground lost”         |
+| API              | Jobs CRUD, enqueue, cancel/pause/resume/retry, logs      | Partial → Finalize | Add /logs, /metrics, /config schema            |
+| Installer        | One-shot PowerShell, auto-port, checks                   | Done → Polish      | Offer portable scrcpy discovery                |
+| UX               | Modern dark theme, compact top bar, tooltips             | Partial → Polish   | Tighten spacing & contrast; add help popovers  |
+
+---
+
+## 2) UX / UI Specification
+
+### 2.1 Navigation & Layout
+
+* **Left sidebar**: Overview · Quick Run · Pipelines · Schedules · Devices · Media · Jobs/Runs · Logs · Settings.
+* **Top bar** (sticky): Device selector | API status dot | Start/Stop | **Emergency Stop**.
+* **Footer**: API URL (port), active worker count, log tail toggle.
+
+### 2.2 Overview
+
+* **Health badges** (green/yellow/red): API, Worker(s), Device.
+* **Safety remaining** pill (posts/likes/follows/comments left today).
+* **Quick actions**: buttons for **Warmup**/**Post**/**Full Pipeline**.
+* **scrcpy controls**: Open/Close, View-only, FPS, bitrate, Always-on-Top, Record, **Auto-open during runs** (checkbox).
+
+### 2.3 Quick Run (Wizard)
+
+1. **Goal**: Warmup / Post / Full Pipeline.
+2. **Content** (if Post/Full): pick video (file dialog + preview), caption (with templates).
+3. **Safety**: preset (Safe/Balanced/Pushy) → show derived like\_prob, watch ranges, sleep ranges (editable).
+4. **Review**: run **estimate** (min/max minutes), action counts (likes/posts), scrcpy auto-open toggle → **Launch**.
+
+### 2.4 Pipelines
+
+* Steps as cards, draggable; each step has inline fields with validation.
+* Supported steps:
+
+  * `rotate_identity {soft:bool}`
+  * `warmup {duration:int, like_prob:float}`
+  * `post_video {video:path, caption:str, effects:{…}}`
+  * `break {duration:int}`
+  * (Phase 2) `comment {text:str}`, `follow {mode:…}`
+* Sidebar: **Repeat**, **Sleep between \[lo,hi]**, **Run Now**, **Save as…**.
+* **Template buttons**: Warmup-only / Post-only / Full content cycle.
+
+### 2.5 Schedules
+
+* Time chips (08:30, 14:00, 20:15) + Repeat.
+* Items list (cycle/break).
+* **Run Now** creates a one-off pipeline (flattened) with same params.
+
+### 2.6 Devices
+
+* Table: serial, state (‘device’/‘unauthorized’/‘offline’), model, last heartbeat.
+* Actions: **Start/Stop worker**, **Open scrcpy**, **Ping**.
+
+### 2.7 Jobs/Runs
+
+* Jobs: filters (device/status), actions: Pause/Resume/Cancel/Retry.
+* Selecting a job shows:
+
+  * **Timeline**: step → substep → duration, with icons.
+  * **Live log tail** (job-scoped).
+
+### 2.8 Logs
+
+* Sources: API / Worker / Scheduler / All.
+* Live tail toggle, search, copy/export.
+
+### 2.9 Settings
+
+* Theme, artifacts dir, API preferred port (auto fallback), default device.
+* scrcpy defaults: view-only, FPS, bitrate, record, auto-open/close when running.
+* FFmpeg presets (repurpose mode, loudness).
+* (Optional) keyring for credentials for future login steps.
+
+**Design language:** modern dark, high contrast, compact top bar, 12–14 px base text, touch-friendly controls, consistent paddings, toasts for errors.
+
+---
+
+## 3) Technical Architecture
+
+```
+main.py                # launcher: auto-port, start API/Scheduler/Worker/GUI
+orchestrator/
+  api.py               # FastAPI: jobs, runs, logs, devices, config, metrics
+  scheduler.py         # APScheduler; builds pipelines from schedules (no blocking sleeps)
+worker/
+  device_worker.py     # per-device loop: claim next job, run pipeline, cancel-aware
+core/
+  device_runner.py     # unlock/open app/warmup/post; pipeline executor
+  state_machine.py     # WarmupScroller (human-like)
+  actions.py           # taps, scrolls, input helpers, selectors
+  recovery.py          # L1/L2/L3 recovery
+  permissions.py       # dialogs & first-run prompts
+interfaces/
+  ui2.py               # uiautomator2 connector
+  adb.py               # adb shell helpers
+ui/
+  app.py               # PyQt6 app (tabs, async HTTP client)
+  scrcpy.py            # find & launch scrcpy, record, version-aware flags
+  assets/*.qss         # theme
+video/
+  effects.py           # ffmpeg wrappers: repurpose, normalize, watermark
+utils/
+  config.py            # YAML deep-merge + defaults
+  logger_setup.py      # loguru rotating logs
+artifacts/
+  orchestrator.db      # SQLite (jobs, runs, counters)
+  logs/                # api.log, worker.log, scheduler.log
+  processed/           # ffmpeg outputs
+  recordings/          # scrcpy recordings
+```
+
+**Processes** (all started by `main.py`):
+
+* API (Uvicorn), Scheduler (thread), Worker(s) (subprocess per device), GUI (PyQt).
+* Inter-process: REST calls; DB shared for jobs/runs; logs per process.
+
+---
+
+## 4) Data Model (SQLite)
+
+**jobs**
+
+* id (PK), device\_serial, payload (JSON), status (`queued|running|paused|done|failed|cancelled`), created\_at, updated\_at, started\_at, finished\_at, error
+
+**runs**
+
+* id (PK), job\_id (FK), device\_serial, step\_name, status, started\_at, finished\_at, metrics (JSON), error
+
+**counters** *(new)*
+
+* id (PK), device\_serial, date (YYYY-MM-DD), posts, likes, follows, comments
+
+**config\_snapshots** *(optional)*
+
+* id (PK), created\_at, content (YAML)
+
+---
+
+## 5) API (Final)
+
+Base: `http://127.0.0.1:<port>`
+
+**Health & devices**
+
+* `GET /health` → `{ok, pid, version, ts}`
+* `GET /devices` → `[{serial, state, model}]` *(state reflects ADB)*
+
+**Jobs**
+
+* `GET /jobs?device=&status=&limit=`
+* `POST /enqueue/warmup`
+  `{device_serial, seconds, like_prob, watch_time:[lo,hi] }`
+* `POST /enqueue/pipeline`
+  `{device_serial, steps:[…], repeat:int, sleep_between:[lo,hi]}`
+* `POST /jobs/{id}/pause|resume|cancel|retry`
+* `POST /jobs/{id}/complete` *(worker use)*
+* `GET /jobs/next?device=SERIAL` *(atomic claim by worker)*
+
+**Runs**
+
+* `GET /runs?device=&job_id=&limit=`
+
+**Logs**
+
+* `GET /logs?source=api|worker|scheduler|all&lines=1000` → text
+
+**Config**
+
+* `GET /config` / `/config/cycles` / `/config/schedules`
+* `POST /config` (validate with Pydantic, deep-merge, persist)
+
+**Metrics**
+
+* `GET /metrics/summary?since=today`
+  → `{jobs_total, jobs_succeeded, jobs_failed, posts_today, likes_today, avg_warmup_s, success_rate}`
+
+---
+
+## 6) Warmup “Human-Like” Specification
+
+**Goal:** mimic thumb swipes with variation in **origin/target bands**, **curvature**, **velocity (ease in/out)**, **micro-jitter**, **occasional reverse**, **streaky likes**, **dwell & long pauses**.
+
+**Config** (`config.yaml → warmup`):
+
+```yaml
+warmup:
+  origin_band: [0.30, 0.85]
+  target_band: [0.15, 0.60]
+  x_band: [0.35, 0.65]
+  curve_amount: [0.02, 0.10]
+  duration_ms: [220, 480]
+  inter_swipe_ms: [350, 1200]
+  reverse_prob: 0.08
+  micro_jitter_prob: 0.20
+  micro_jitter_px: [3, 18]
+  like_probability: 0.06
+  like_streakiness: 0.25
+  watch_time_s: [4, 10]
+  chance_pause_long: 0.05
+  pause_long_s: [8, 18]
+  rng_day_seeded: true
+```
+
+**Implementation:** `WarmupScroller` (as previously provided).
+
+* Use `u2.gesture` if available; fallback to `adb input swipe`.
+* Check cancellation every ≤ 200ms in dwell/pauses.
+
+**Acceptance tests:**
+
+* Reverse scrolls appear in 5–10% of swipes over N=100.
+* Like autocorrelation > 0 for **streakiness > 0** (vs. pure Bernoulli).
+
+---
+
+## 7) Posting Flow Specification
+
+**Phases:**
+
+1. **Push video** to device: `/sdcard/Movies/TA/<uuid>.mp4`.
+2. **Open TikTok** (package: `com.zhiliaoapp.musically` or local variant).
+3. **Navigate to upload**:
+
+   * Tap “+” (bottom center) → select **Upload** (if camera opens).
+   * Pick gallery thumbnail for our video (by filename when possible).
+4. **Editor**:
+
+   * Wait for progress; optionally trim/crop if needed (we skip).
+   * Tap **Next**.
+5. **Caption**:
+
+   * Focus caption field; input caption string (with emoji support).
+   * Optional: add hashtags (paste or tap suggestions).
+6. **Post**:
+
+   * Tap **Post**.
+   * Wait for confirmation or return to feed; capture success metric.
+
+**Selectors strategy:**
+
+* Prefer resourceId/desc text combos; maintain **primary** and **fallback** selectors per phase.
+* After each tap, **verify** expected next element appears (`wait(timeout)`).
+* If fail: retry up to N with backoff; escalate recovery.
+
+**Device variability:**
+
+* Keep UI constants in a `selectors.py` keyed by app version or manufacturer if needed.
+* Allow overrides via `config/selectors.yaml`.
+
+**Acceptance:**
+
+* On your target device build, 3/3 consecutive posts succeed with default video.
+
+---
+
+## 8) Video Processing Specification
+
+**Effects (ffmpeg):**
+
+* **repurpose\_9x16**: center/face-aware crop to 1080×1920 (fallback center if face detect not present), scale & pad.
+* **normalize\_audio**: EBU R128 `-filter:a loudnorm`.
+* **watermark**: PNG overlay at configurable position & opacity.
+
+**Outputs:**
+
+* `artifacts/processed/{job_id}-{step_idx}.mp4` (cached).
+* GUI **Preview** uses QtMultimedia; close button stays within the page (no overlay over whole window).
+
+**Per-step overrides:**
+
+```json
+{"type":"post_video",
+ "video":"data/clip1.mp4",
+ "caption":"Hello",
+ "effects":{"repurpose_9x16":true,"normalize_audio":true,"watermark":"branding.png"}}
+```
+
+---
+
+## 9) Safety & Rate Limits
+
+**Counters (DB):** increment on successful actions.
+**Caps (config):**
+
+```yaml
+safety:
+  caps:
+    posts: 5
+    likes: 200
+    follows: 50
+    comments: 30
+```
+
+**Worker guardrails:**
+
+* Before each action, check remaining today; if exceeded → mark job **failed (safety)** and show in UI.
+* Overview shows **remaining** per device.
+
+**Presets**:
+
+* Safe / Balanced / Pushy → map to `(like_prob, watch_time, sleep_between)`.
+  Provide a helper that resolves a preset into concrete values.
+
+---
+
+## 10) Error Handling & Recovery
+
+**Recovery ladder (core/recovery.py):**
+
+1. **L1 restart app** (force-stop + start activity).
+2. **L2 wait+restart** (cooldown 30–60s).
+3. **L3 reboot** (adb reboot; wait for device + UI2 reconnect).
+
+**Worker loop:**
+
+* Cancel-aware between phases and inside long loops (warmup).
+* Retry budget per phase; bubbled error includes phase tag for logs.
+
+**Emergency Stop:**
+
+* GUI button → `POST /jobs/cancel_all` + stop workers + kill active ADB input.
+
+---
+
+## 11) Logging, Metrics, Observability
+
+* **Log format**: `[ts] [level] [component] device=SER job=… step=… msg`.
+* **Files**: `artifacts/logs/api.log`, `worker.log`, `scheduler.log` (rotating).
+* **Runs** row per step with duration, outcome, and useful metrics (e.g., frames processed, retries).
+* **Metrics endpoint** `/metrics/summary`: used for Overview cards.
+
+---
+
+## 12) Configuration & Validation
+
+* **Defaults** hardcoded; load `config/config.yaml`; **deep-merge**.
+* **Pydantic** models validate:
+
+  * warmup ranges (0–1 probabilities; lo\<hi).
+  * sleep ranges positive.
+  * paths exist for watermark/video if specified.
+* On validation error → GUI toast + Settings shows offending key.
+
+---
+
+## 13) Performance Targets
+
+* Quick Run to first action: **< 2s** (with already running API).
+* Warmup loop tick: sleep granularity **≤ 200ms** during dwell/cancel check.
+* Video preview open: **< 1.5s** for local files.
+* CPU load with scrcpy view-only at 30 fps, 6–8 Mbps: **moderate**; no stutter.
+
+---
+
+## 14) Testing & QA
+
+**Unit tests**
+
+* WarmupScroller: path bounds, reverse ratio, streaky autocorrelation.
+* Config validation: presets resolve, invalid inputs rejected.
+
+**Integration**
+
+* Enqueue → worker runs → runs DB written → logs contain step markers.
+* Cancel during warmup: stops **≤ 1s**.
+* Break step cancel: stops **≤ 1s**.
+* Posting happy path on target device: **3/3 success**.
+
+**Manual QA**
+
+* Scrcpy open/close, auto-open on run, recording option saves to `artifacts/recordings`.
+* GUI remains responsive under network hiccups (async HTTP).
+
+---
+
+## 15) Packaging & Deployment
+
+* **Windows**: PyInstaller single-folder build.
+* Bundle `platform-tools` optional; discover scrcpy under `tools/scrcpy/` if not on PATH.
+* Pre-create `artifacts/` subfolders.
+* `install.ps1`:
+
+  * Checks: Python 3.11, pip, ffmpeg, adb, scrcpy, uiautomator2 init; creates `.venv`; installs reqs; sets DB.
+
+---
+
+## 16) Work Plan (Sprints)
+
+**Sprint 1 (stability + UX polish)**
+
+* Finalize API (/logs, /metrics, /jobs next claim).
+* Async GUI HTTP, no blocking.
+* WarmupScroller integration.
+* Posting flow selector tune (your device).
+* Scrcpy controls (recording, auto-open/close).
+
+**Sprint 2 (safety + observability)**
+
+* Counters DB + guardrails.
+* Overview “remaining today” pill.
+* Metrics endpoint + Overview cards.
+* Jobs timeline icons; Logs tab finish.
+
+**Sprint 3 (content & multi-device)**
+
+* Per-step effects overrides + cache + preview.
+* Multi-device workers + Devices tab controls.
+* Schedule time estimator (min/max bounds).
+
+**Sprint 4 (extras)**
+
+* Comment/Follow steps with rate caps.
+* Config Pydantic schema & helpful Settings errors.
+* Optional keyring for credentials.
+
+---
+
+## 17) Definition of Done (per feature)
+
+* **Quick Run**: Launchable in ≤ 3 clicks; passes safety params; shows time estimate; logs a run.
+* **Warmup**: Human-like behavior meets spec; cancels in ≤ 1s; logs actions.
+* **Posting**: 3/3 success on target device; retries respected; recovery escalates correctly.
+* **Safety**: Counters decrement on success; caps enforced; visible remaining.
+* **Scrcpy**: Open/close stable; auto-open works; record saves file.
+* **Logs**: Unified logs accessible; job timeline visible; copy/export works.
+
+---
+
+## 18) Anti-Detection Checklist (always on)
+
+* RNG seeded per device/day; bands/curves/durations variable.
+* Micro-jitter, occasional reverse, long dwell pauses.
+* **Streaky likes** (non-IID).
+* Randomized sleep between steps; swipe velocity uses ease in/out.
+* Optional time-of-day bias on activity (future).
+
+---
+
+## 19) Open Questions (to confirm before coding)
+
+1. Target TikTok build/version on your device? (We’ll tune selectors to it.)
+2. Do you want **face-aware cropping** (adds OpenCV/mediapipe), or keep center-crop for speed?
+3. Multi-device: ship now or next sprint?
+4. Any branding (logo, accent color) for the GUI?
+5. Do we need an **exportable run report** (PDF/HTML) for clients?
+
+---
+
+## 20) Hand-Off Notes for the Engineer
+
+* Start with **Sprint 1** items; wire WarmupScroller and finalize posting selectors on the provided device.
+* Keep **GUI responsive** (no direct `requests.*` on UI thread).
+* Do not block in scheduler jobs; breaks are pipeline steps.
+* Every long loop checks **cancellation** frequently.
+* Add **unit tests** for WarmupScroller and config validation early (fast feedback).
+
+---
+
+If you want, I can turn this into a clickable **project board** (issues & tasks) or generate the Pydantic models + endpoint stubs to kickstart coding.

@@ -1,0 +1,12 @@
+QWidget { background: #0e1117; color: #e6edf3; font-size: 13px; }
+QLineEdit, QTextEdit, QComboBox, QSpinBox, QDateTimeEdit { background: #0b0f16; border: 1px solid #202636; border-radius: 8px; padding: 8px; }
+QPushButton { background: #111726; border: 1px solid #2a3246; padding: 9px 14px; border-radius: 10px; }
+QPushButton:hover { background: #1a2133; }
+QPushButton:pressed { background: #0c1220; }
+QGroupBox { border: 1px solid #202636; border-radius: 10px; margin-top: 14px; }
+QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; padding: 4px 8px; }
+QHeaderView::section { background: #0b0f16; border: none; padding: 6px; color: #cfd6e6; }
+QListWidget { background: #0b0f16; border: 1px solid #1c2233; }
+QListWidget::item { padding: 10px 12px; }
+QListWidget::item:selected { background: #1b2540; border-left: 3px solid #7aa2f7; }
+QStatusBar { background: #0b0f16; }

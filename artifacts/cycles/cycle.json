@@ -1,0 +1,15 @@
+{
+  "schema": "ta.cycle.v1",
+  "name": "cycle",
+  "steps": [
+    {
+      "type": "rotate_identity",
+      "soft": true
+    },
+    {
+      "type": "warmup",
+      "duration": 120,
+      "like_prob": 0.07
+    }
+  ]
+}

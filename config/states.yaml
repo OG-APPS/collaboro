@@ -1,0 +1,54 @@
+states:
+  BIRTHDAY_GATE:
+    detect:
+      text_any: ["(?i)when.?s your birthday", "(?i)date of birth", "(?i)birthday"]
+    actions:
+      login_existing:
+        click_text_any: ["(?i)log in", "(?i)sign in"]
+      create_new:
+        fill_birthday: "1991-01-04"
+        then_click: ["(?i)continue", "(?i)next"]
+    exit:
+      text_any: ["(?i)log in to tiktok", "(?i)home|for you"]
+    timeout_s: 12
+
+  LOGIN_SHEET:
+    detect:
+      text_any: ["(?i)log in to tiktok", "(?i)use phone / email / username", "(?i)continue with google"]
+    actions:
+      google:
+        click_text_any: ["(?i)continue with google", "(?i)google"]
+      password:
+        click_text_any: ["(?i)use phone / email / username"]
+    exit:
+      text_any: ["(?i)choose an account", "(?i)password"]
+    timeout_s: 10
+
+  GOOGLE_ACCOUNT_PICKER:
+    detect:
+      text_any: ["(?i)choose an account", "(?i)use another account"]
+    exit:
+      text_any: ["(?i)for you|home"]
+    timeout_s: 8
+
+  NICKNAME:
+    detect:
+      text_any: ["(?i)create nickname", "(?i)nickname"]
+    exit:
+      text_any: ["(?i)for you|home", "(?i)swipe up for more"]
+    timeout_s: 8
+
+  SWIPE_TUTORIAL:
+    detect:
+      text_any: ["(?i)swipe up for more"]
+    exit:
+      text_any: ["(?i)for you|home"]
+    timeout_s: 8
+
+  FYP_READY:
+    detect:
+      text_any: ["(?i)for you|home"]
+    exit:
+      text_any: ["(?i)for you|home"]
+    timeout_s: 2
+

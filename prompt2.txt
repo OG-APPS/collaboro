@@ -1,0 +1,304 @@
+
+
+# Cycle Builder — Product & Technical Spec
+
+## High-level goals
+
+* Let an operator **compose full automation cycles visually** (drag & drop).
+* Keep it **safe** (guided order, validation) and **powerful** (rooted steps, video effects, login modes).
+* Make cycles **reusable** (save, clone, template) and **runnable** in one click (Run Now / Dry Run).
+
+---
+
+# UX structure
+
+**Layout (three panes)**
+
+1. **Left: Step Palette**
+
+   * Categories: *Identity (root)*, *Network*, *Provisioning*, *App*, *Warmup*, *Posting*, *Timing/Control*, *Helpers*
+   * Each step shows a **name**, short **tooltip**, and **root-only badge** if applicable.
+
+2. **Center: Canvas**
+
+   * Vertical **stack of step cards**, reorderable via drag-handle.
+   * Each card shows: **Step name**, **short description**, **badges** (root-only, optional), **duration chip** (if known), **errors/warnings**, **enable toggle**.
+   * Inline controls: **duplicate**, **disable**, **remove**, **Test Step** (where applicable).
+
+3. **Right: Properties Inspector**
+
+   * Contextual form for the selected step.
+   * Expanders for **Advanced**, **Safety**, **Randomization**, **Recovery**.
+   * Live validation messages.
+
+**Header actions**
+
+* Save · Save As (Clone) · Delete · **Templates ▼** (load preset pipelines) · **Dry Run** · **Run Now** · **Estimate** (total duration & actions)
+* Toggle: **Auto-open scrcpy during runs** (uses scrcpy defaults from Settings)
+* Toggle: **Rooted Isolation Mode** (inserts root steps at the top automatically)
+
+**Footer**
+
+* **Live Preview**: human-readable “script” of the cycle (1 line per step)
+* Timing & actions summary: “\~23–31 min · \~140 swipes · \~8 likes”
+
+---
+
+# Step palette (must-have steps)
+
+**Identity (root)**
+
+* `create_user_rooted {name?, ephemeral?}`
+* `switch_user_rooted {user_id}`
+* `spoof_props_rooted {props, reboot_if_changed:true}` *(whitelisted)*
+* `spoof_wifi_mac_rooted {mode:"random"|"fixed", mac?, iface?, ssid?}`
+* `reset_gaid {mode:"root"|"ui"}`
+
+**Network**
+
+* `rotate_network {mode:"vpn_app"|"wifi_profile", profile?, timeout_s?}`
+
+**Provisioning**
+
+* `install_apk {apk_path, reinstall:true}`
+* `permissions_hardening {allow_notifications:true, deny_location:true, allow_storage:true}`
+
+**App**
+
+* `launch_tiktok {timeout_s}`
+* `login {method:"gmail"|"password", username?, password?, gmail_account?}`
+* `ensure_fyp {max_retries, timeout_s}`
+
+**Warmup**
+
+* `warmup {seconds, like_prob, comment_prob, share_prob, randomization_preset}`
+
+**Posting**
+
+* `repurpose_video {input?, repurpose_9x16?, normalize_audio?, watermark?}` *(can be used standalone in Media tab too)*
+* `post_video {video, caption, hashtags?, effects?}`
+
+**Timing/Control**
+
+* `break {duration_s}`
+* `checkpoint {note}` *(no-op marker for reports)*
+
+**Helpers**
+
+* `scrcpy_open {view_only:true, always_on_top:true, max_fps:30, video_bit_rate:"8M"}`
+* `scrcpy_close {}`
+
+> Root-only steps show a **“ROOT” pill**; clicking it opens a learn-more popover.
+
+---
+
+# Properties inspector (fields per step)
+
+* Only show **relevant fields** for that step.
+* Field types: text, number, slider (probabilities 0–1), path picker, drag/drop region (APK/video), dropdown (presets), toggles, time pickers.
+* **Validation as-you-type**; errors/warnings appear on the card as well.
+
+**Examples**
+
+* `install_apk`: file dropper + browse button; checkbox “Reinstall if exists”.
+* `login`: radio (gmail/password). For gmail: show account dropdown (fetched from device via UI2 if possible). For password: username/password fields; **mask** the password; “Store in keyring?” toggle.
+* `warmup`: seconds; probabilities; preset (Safe/Balanced/Pushy) that fills ranges but can be edited.
+* `spoof_props_rooted`: multi-row key/value editor restricted to whitelist keys; info banner “Changing fingerprint requires reboot.”
+
+---
+
+# Data model & persistence
+
+**Cycle object (JSON/YAML)**
+
+```json
+{
+  "schema": "ta.cycle.v1",
+  "name": "Full Pipeline (Rooted)",
+  "description": "Max isolation, then warmup + post",
+  "enabled": true,
+  "auto_open_scrcpy": false,
+  "steps": [
+    {"type":"create_user_rooted","ephemeral":true},
+    {"type":"spoof_props_rooted","props":{"ro.product.model":"SM-G991B"}, "reboot_if_changed":true},
+    {"type":"spoof_wifi_mac_rooted","mode":"random"},
+    {"type":"reset_gaid","mode":"root"},
+    {"type":"install_apk","apk_path":"<ask_ui>","reinstall":true},
+    {"type":"launch_tiktok"},
+    {"type":"login","method":"password","username":"<ask_ui>","password":"<ask_ui>"},
+    {"type":"ensure_fyp","max_retries":3,"timeout_s":40},
+    {"type":"warmup","seconds":480,"like_prob":0.07,"comment_prob":0.0,"share_prob":0.0,"randomization_preset":"balanced"},
+    {"type":"post_video","video":"<ask_ui>","caption":"Daily 🔥"},
+    {"type":"break","duration_s":1800}
+  ],
+  "metadata": {
+    "created_at": "2025-08-10T10:30:00Z",
+    "updated_at": "2025-08-10T10:30:00Z",
+    "owner": "local"
+  }
+}
+```
+
+**Storage**
+
+* Save cycles under `artifacts/cycles/NAME.json` (or in SQLite as a `cycles` table).
+* Provide **import/export** (JSON) and **template library** (bundled YAML in `config/templates/`).
+
+**Versioning**
+
+* Include `schema` string (e.g., `ta.cycle.v1`).
+* If schema changes, add a **migration** function (v1→v2) and bump.
+
+---
+
+# Validation rules (preflight)
+
+* **Root prerequisites**: root-only steps require root detected; otherwise show red warning and allow *save* but block *run*.
+* **Order constraints**:
+
+  * `spoof_props_rooted` must come **before** `launch_tiktok` (and may require reboot).
+  * `install_apk` must come before `launch_tiktok`.
+  * `login` must come after `launch_tiktok`.
+  * `post_video` must come after `ensure_fyp` (recommended).
+* **Required fields**: file paths exist for `install_apk` and `post_video` (or allow `<ask_ui>` placeholders and prompt at run).
+* **Probabilities**: 0.0–1.0; ranges lo\<hi.
+* **Durations**: >0.
+* **Effects**: if `watermark` enabled, path must exist.
+
+**Validation surface**
+
+* Inline errors on step card + detailed list in the right panel.
+* “Validate” button returns either ✅ Ready or a structured list of issues (step #, field, message).
+
+---
+
+# Estimation engine
+
+* Each step contributes a **deterministic** or **range** estimate:
+
+  * `warmup.seconds` → ± randomness window (e.g., ±10%).
+  * `post_video` → fixed 2–5 min depending on device baseline (configurable per device).
+  * `break` → exact duration or range if randomization enabled.
+* Show **Total (min–max)** and **Action counts** (approx swipes/likes) in footer and Review page.
+* Persist estimates to the **run report**.
+
+---
+
+# Actions in the tab
+
+* **Run Now**:
+
+  * Prompts for any `<ask_ui>` values (APK path, username/password, video).
+  * Optionally toggles **Auto-open scrcpy**.
+  * Sends a **flattened pipeline** to `POST /enqueue/pipeline`.
+
+* **Dry Run**:
+
+  * Validates + estimates; runs **no device actions**.
+  * Optionally opens scrcpy and walks through screens without taps (safe preview).
+  * Produces a **dry-run report** (what would happen).
+
+* **Test Step** (on cards where safe):
+
+  * Executes the single step immediately (e.g., open scrcpy, ensure\_fyp); logs to a transient “test run”.
+
+* **Templates**:
+
+  * “Full Pipeline (Rooted Isolation)”, “Warmup Only”, “Post Only”, “Warmup + Post with Break”.
+  * Loading a template replaces current canvas (confirm dialog).
+
+* **Clone**:
+
+  * “Save As…” to duplicate with a new name.
+
+---
+
+# Backend contracts the UI relies on
+
+* `GET /config/cycles` → list of cycles (names + metadata).
+* `GET /config/cycles/{name}` → full cycle JSON.
+* `POST /config/cycles/{name}` → upsert (with Pydantic validation).
+* `DELETE /config/cycles/{name}`
+* `POST /validate/cycle` → returns `{ok:bool, issues:[{step_index, field, message, level}]}`.
+* `POST /estimate/cycle` → `{duration: {min_s,max_s}, actions: {swipes,likes}}`.
+* `POST /enqueue/pipeline` → `{job_id}` (accepts either raw `steps` or `cycle_name` + overrides).
+* `GET /jobs/{id}` → job status + live step pointer.
+* `POST /jobs/{id}/cancel|pause|resume|retry`.
+
+> If you don’t implement `/validate` and `/estimate` on the server, the UI can compute them locally with shared models.
+
+---
+
+# Integration with Schedules
+
+* In **Schedules** tab, the “Add Item” dialog offers:
+
+  * **Cycle** (pick from saved cycles)
+  * **Break (minutes)**
+* “Run Now” on a schedule: **flatten** items into one pipeline and call `/enqueue/pipeline`.
+* “Edit cycle” button opens Cycle Builder preloaded with that cycle (in a new tab).
+
+---
+
+# Rooted safety & self-tests
+
+* **Top banner** when rooted features are present in the canvas but root not detected.
+* “Root Ops Self-Test” button (Devices tab) checks:
+
+  * `su` access
+  * `resetprop` availability
+  * Wi-Fi interface detection and **MAC spoof read-back** capability
+* Cycle Builder reuses these results to show **green/amber/red** pills next to root steps.
+
+---
+
+# Reports & observability
+
+* Every run gets a **Timeline**: step → status → duration → key metrics (e.g., swipes, likes, props changed).
+* From Cycle Builder, click **“Last Run Report”** to open the latest report for that cycle.
+* **Export** (JSON/HTML) from Jobs/Runs tab.
+
+---
+
+# Keyboard shortcuts (quality-of-life)
+
+* `Ctrl+S` Save cycle
+* `Ctrl+D` Duplicate step
+* `Del` Remove step
+* `Ctrl+R` Run Now
+* `Ctrl+E` Estimate
+* `Ctrl+Z / Ctrl+Y` Undo/Redo (local model)
+
+---
+
+# Acceptance criteria (for delivery sign-off)
+
+* Cycle Builder tab exists with **Palette · Canvas · Inspector** and works end-to-end.
+* Drag/reorder, enable/disable, duplicate, remove steps.
+* Save/Load/Clone cycles; load templates.
+* Validation blocks **Run Now** if critical; warnings allowed with confirmation.
+* **Run Now** prompts for missing inputs; enqueues successfully; shows job id.
+* **Dry Run** produces an estimate and a dry-run report; performs no device actions.
+* Estimation is visible and within configured ranges for warmup/post/break.
+* Root-only steps are clearly marked; run is blocked if root missing (unless overridden).
+* Video/APK selection supports drag & drop + file picker.
+* Auto-open scrcpy toggle is respected on Run Now.
+* Logs & last run report accessible from the tab.
+
+---
+
+# Developer checklist (implementation order)
+
+1. Wire **Cycle model** with schema + validation (shared with API if possible).
+2. Build **UI skeleton** (3 panes) + palette → canvas drag & drop → selection → inspector form.
+3. Implement **save/load/clone/templates/import/export**.
+4. Implement **local validation** & **estimation** (or API-backed).
+5. Add **Run Now** & **Dry Run** flows (prompt for inputs).
+6. Step card actions (**duplicate/disable/remove/Test Step**).
+7. Root badges + **root state awareness** (from Devices service).
+8. Polish: **compact QSS theme**, tooltips, keyboard shortcuts.
+9. Connect to **Jobs/Runs** to view last report quickly from the builder.
+
+---
+
+If you want, I can also draft the **field-by-field forms** for each step (labels, default values, help text) so your dev can literally build the inspector without guessing.

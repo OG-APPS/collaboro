@@ -1,0 +1,233 @@
+[
+  {
+    "timestamp": "2025-08-14T11:30:49.759074",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T11:30:54.339897",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T11:31:15.277654",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T11:31:44.200665",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: Permissions",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T11:35:38.642988",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T11:35:43.582560",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T11:36:08.130948",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T11:36:42.370297",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: Permissions",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:28:25.162499",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:28:29.849959",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T12:28:57.075185",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:29:29.587598",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: Permissions",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:31:50.363911",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:31:54.366555",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T12:32:17.005146",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:32:46.256615",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: Permissions",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:47:48.734326",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:47:52.629986",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "51 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T12:47:57.955083",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:52:18.338472",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:52:23.036689",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T12:52:44.661435",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:53:08.008116",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: Permissions",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:55:48.222359",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T12:55:52.453107",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T12:56:14.766562",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T13:04:12.330551",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T13:04:16.291494",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "51 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T13:04:40.133205",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T13:09:36.135822",
+    "device": "ZY22BWZPB2",
+    "action": "\ud83d\ude80 TikTok Launched",
+    "details": "Package: com.zhiliaoapp.musically",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T13:09:40.993891",
+    "device": "ZY22BWZPB2",
+    "action": "Page Detected: \ud83c\udfe0 Android Home",
+    "details": "52 text elements",
+    "status": "info"
+  },
+  {
+    "timestamp": "2025-08-14T13:10:00.652944",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: App blockers",
+    "status": "success"
+  },
+  {
+    "timestamp": "2025-08-14T13:10:30.857171",
+    "device": "ZY22BWZPB2",
+    "action": "\u2705 Popup Dismissed",
+    "details": "Handled: Permissions",
+    "status": "success"
+  }
+]

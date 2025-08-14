@@ -1,0 +1,42 @@
+ui:
+  theme: dark
+  accent: '#7aa2f7'
+  auto_open_scrcpy: false
+  show_toasts: true
+  keyboard_shortcuts: true
+safety:
+  warmup_seconds: 120
+  like_probability: 0.07
+  watch_lo: 6
+  watch_hi: 13
+system:
+  api_port: 8000
+  artifacts: artifacts
+  default_device: ZY22BWZPB2
+video:
+  presets:
+    repurpose_9x16: true
+    normalize_audio: false
+    watermark: ''
+cycles:
+  Warmup + Post:
+    steps:
+    - type: rotate_identity
+      soft: true
+    - type: warmup
+      duration: 180
+    - type: post_video
+      video: ''
+      caption: ''
+  tiny:
+    steps:
+    - type: warmup
+      duration: 2
+schedules:
+  repeat_test:
+    repeat: 2
+    start_times:
+    - '21:06'
+    items:
+    - type: cycle
+      name: tiny
