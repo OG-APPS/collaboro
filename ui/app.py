@@ -1404,6 +1404,9 @@ class CycleBuilderPage(QWidget):
             ("post_video", "Post video {video, caption}"),
             ("break", "Break {duration}"),
             ("rotate_identity", "Rotate identity (soft)"),
+            ("close_app", "Close TikTok app"),
+            ("ip_rotate", "IP Rotate {command,args,timeout}"),
+            ("verify_profile", "Verify Profile {command,args,timeout}"),
         ]
         for key, desc in palette_items:
             it = QListWidgetItem(f"{key} — {desc}")
@@ -1442,6 +1445,8 @@ class CycleBuilderPage(QWidget):
         if t == "post_video": return {"type":"post_video","video":"","caption":""}
         if t == "break": return {"type":"break","duration":60}
         if t == "rotate_identity": return {"type":"rotate_identity","soft":True}
+        if t == "close_app": return {"type":"close_app"}
+        if t in ("ip_rotate","verify_profile"): return {"type":t,"command":"","args":[],"timeout":30}
         return {"type":t}
 
     def _refresh_preview(self):
@@ -1515,6 +1520,21 @@ class CycleBuilderPage(QWidget):
                 st["soft"]=soft.isChecked(); self._sync_canvas()
             soft.toggled.connect(lambda _: on_change())
             self.inspect_form.addRow("Mode", soft)
+        elif t == "close_app":
+            self.inspect_form.addRow(QLabel("Stops TikTok package"))
+        elif t in ("ip_rotate","verify_profile"):
+            cmd = QLineEdit(st.get("command",""))
+            args = QLineEdit(" ".join(st.get("args",[])))
+            to = QSpinBox(); to.setRange(1,600); to.setValue(int(st.get("timeout",30)))
+            wd = QLineEdit(st.get("working_dir",""))
+            def on_change():
+                st["command"]=cmd.text().strip(); st["args"]=args.text().split(); st["timeout"]=int(to.value()); st["working_dir"]=wd.text().strip(); self._sync_canvas()
+            for w in (cmd,args,wd): w.textChanged.connect(lambda _: on_change())
+            to.valueChanged.connect(lambda _: on_change())
+            self.inspect_form.addRow("Command", cmd)
+            self.inspect_form.addRow("Args", args)
+            self.inspect_form.addRow("Timeout (s)", to)
+            self.inspect_form.addRow("Working dir", wd)
 
     # --------- actions ---------
     def add_from_palette(self, item: QListWidgetItem):
