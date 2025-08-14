@@ -95,11 +95,16 @@ async def lifespan(app: FastAPI):
     logger.info("API stopping…")
 
 class PipelineStep(BaseModel):
-    type: Literal["warmup", "break", "post_video", "rotate_identity", "close_app", "login", "log_account_data"]
+    type: Literal["warmup", "break", "post_video", "rotate_identity", "close_app", "login", "log_account_data", "ip_rotate", "verify_profile"]
     duration: Optional[int] = Field(default=None, ge=1, le=24*60*60)
     like_prob: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     video: Optional[str] = None
     caption: Optional[str] = None
+    # External command configuration
+    command: Optional[str] = None
+    args: Optional[List[str]] = None
+    timeout: Optional[int] = Field(default=30, ge=1, le=300)
+    working_dir: Optional[str] = None
 
 class EnqueueWarmup(BaseModel):
     device_serial: str
@@ -193,6 +198,18 @@ def debug_adb(_: bool = Depends(verify_token), request: Request = None):
         adbutils_err = str(e)
     eff = [d.get("serial") for d in devices(True, request=request)]  # type: ignore
     logger.info(f"/debug/adb from {client}: adb_ok={adb_text is not None}, adbutils_ok={not bool(adbutils_err)}; effective={eff}")
+@app.post("/sessions/append_note")
+def post_session_append_note(job_id: int = Body(...), note: Dict[str, Any] = Body(...), _: bool = Depends(verify_token)):
+    conn = get_db()
+    try:
+        conn.execute("UPDATE runs SET status=status WHERE job_id=?", (job_id,))
+        # In absence of a dedicated notes column, reuse runs.status for minimal changes (or add runs.notes later)
+        # For demo purposes, just log it via logger and user_logger
+        logger.info(f"Session note for job {job_id}: {note}")
+        return {"ok": True}
+    finally:
+        conn.close()
+
     return {"adb_output": adb_text, "adb_error": adb_err, "adbutils_list": adbutils_list, "adbutils_error": adbutils_err, "effective_devices": eff}
 
 @app.get("/jobs")
@@ -268,6 +285,22 @@ def get_next_job(device: str, _: bool = Depends(verify_token)):
         # Fallback: wrap SELECT+UPDATE in a transaction for older SQLite versions
         try:
             conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(
+                "SELECT id, device, type, payload, status, created_at FROM jobs WHERE device=? AND status='queued' ORDER BY id ASC LIMIT 1",
+                (device,)
+            ).fetchone()
+            if not row:
+                conn.execute("COMMIT"); conn.close(); return {}
+            jid = row["id"]
+            conn.execute("UPDATE jobs SET status='running' WHERE id=?", (jid,))
+            conn.execute("INSERT INTO runs(job_id,device,status) VALUES(?,?,?)", (jid, device, "running"))
+            conn.commit(); rr = row_to_dict(row); conn.close(); return rr
+        except Exception:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            conn.close(); return {}
 # --- Accounts API ---
 class AccountIn(BaseModel):
     username: str
@@ -333,21 +366,6 @@ def assign_account(req: AssignRequest, _: bool = Depends(verify_token)):
     out = {"account": acc, "credentials": row_to_dict(cred)}
     return out
 
-            r = conn.execute(
-                "SELECT * FROM jobs WHERE device=? AND status='queued' ORDER BY id ASC LIMIT 1",
-                (device,),
-            ).fetchone()
-            if not r:
-                conn.execute("COMMIT"); conn.close(); return {}
-            jid = r["id"]
-            conn.execute("UPDATE jobs SET status='running' WHERE id=?", (jid,))
-            conn.execute("INSERT INTO runs(job_id,device,status) VALUES(?,?,?)", (jid, device, "running"))
-            conn.execute("COMMIT")
-            rr = row_to_dict(r); conn.close(); return rr
-        except Exception:
-            try: conn.execute("ROLLBACK")
-            except Exception: pass
-            conn.close(); return {}
 
 
 @app.get("/runs")
