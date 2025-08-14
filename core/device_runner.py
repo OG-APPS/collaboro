@@ -227,6 +227,31 @@ class DeviceRunner:
                     ok = self.warmup(dur, likep, should_continue) and ok
                 elif t=="break":
                     d = st.get("duration")
+                elif t=="ip_rotate" or t=="verify_profile":
+                    # Execute external command per step configuration via API adapter
+                    try:
+                        from orchestrator.external_adapter import run_external
+                    except Exception:
+                        logger.error("External adapter not available"); ok = False; continue
+                    cmd = st.get("command"); args = st.get("args") or []
+                    timeout = int(st.get("timeout", 30)); cwd = st.get("working_dir")
+                    if not cmd:
+                        logger.warning(f"{t} step missing command"); continue
+                    res = run_external(cmd, args=args, timeout=timeout, cwd=cwd)
+                    # Store result in runs table notes via API (sessions audit trail could be added)
+                    try:
+                        from orchestrator.api import get_db
+                        conn = get_db()
+                        conn.execute("UPDATE runs SET status=? WHERE job_id=(SELECT id FROM jobs ORDER BY id DESC LIMIT 1)",
+                                     ("running",))
+                        # For demo: append to runs table via a temp table or write to logs; keeping simple here
+                        logger.info(f"External step {t} -> ok={res.get('ok')} code={res.get('exit_code')}")
+                        conn.close()
+                    except Exception:
+                        pass
+                    if not res.get("ok"):
+                        ok = False
+
                     dur = int(d) if d is not None else 60
                     for _i in range(dur):
                         if should_continue and not should_continue():
